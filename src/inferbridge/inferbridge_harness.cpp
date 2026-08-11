@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <deque>
+#include <filesystem>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -474,7 +475,16 @@ ibrh_result IBRH_CALL model_load(
         std::string task;
         if (!json_string(parameters, "task", task))
             throw std::runtime_error("model parameters require task=ocr or translation");
-        const std::wstring wide_model = utf8_to_wide(model_path);
+        std::filesystem::path model_location = std::filesystem::u8path(model_path);
+        const bool snapshot_directory = std::filesystem::is_directory(model_location);
+        std::string model_filename;
+        if (snapshot_directory) {
+            if (!json_string(parameters, "model_filename", model_filename))
+                throw std::runtime_error(
+                    "snapshot model parameters require model_filename");
+            model_location /= std::filesystem::u8path(model_filename);
+        }
+        const std::wstring wide_model = model_location.wstring();
         if (wide_model.empty()) throw std::runtime_error("model path is not valid UTF-8");
         auto model = std::make_unique<ibrh_model>();
         LocalAIConfig config{};
@@ -485,9 +495,18 @@ ibrh_result IBRH_CALL model_load(
         std::wstring projector;
         if (task == "ocr") {
             std::string projector_path;
-            if (!json_string(parameters, "vision_projector_path", projector_path))
-                throw std::runtime_error("OvisOCR2 requires vision_projector_path");
-            projector = utf8_to_wide(projector_path);
+            if (snapshot_directory) {
+                if (!json_string(parameters, "vision_projector_filename",
+                                 projector_path))
+                    throw std::runtime_error(
+                        "OvisOCR2 snapshot requires vision_projector_filename");
+                projector = (std::filesystem::u8path(model_path) /
+                             std::filesystem::u8path(projector_path)).wstring();
+            } else {
+                if (!json_string(parameters, "vision_projector_path", projector_path))
+                    throw std::runtime_error("OvisOCR2 requires vision_projector_path");
+                projector = utf8_to_wide(projector_path);
+            }
             if (projector.empty())
                 throw std::runtime_error("vision projector path is not valid UTF-8");
             config.ocr_model_path = wide_model.c_str();

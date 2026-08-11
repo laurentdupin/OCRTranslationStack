@@ -142,9 +142,14 @@ int main(int argc, char** argv) {
 
         const std::string ocr_path = slash_path(argv[2]);
         const std::string projector = slash_path(argv[3]);
-        ibrh_model* ocr = load(
-            ocr_path, "{\"task\":\"ocr\",\"vision_projector_path\":\"" +
-                          escape(projector) + "\",\"source_language\":\"English\"}");
+        const bool ocr_snapshot = std::filesystem::is_directory(ocr_path);
+        const std::string ocr_parameters = ocr_snapshot
+            ? "{\"task\":\"ocr\",\"model_filename\":\"ATH-MaaS_OvisOCR2-Q6_K.gguf\","
+              "\"vision_projector_filename\":\"mmproj-ATH-MaaS_OvisOCR2-bf16.gguf\","
+              "\"source_language\":\"English\"}"
+            : "{\"task\":\"ocr\",\"vision_projector_path\":\"" +
+              escape(projector) + "\",\"source_language\":\"English\"}";
+        ibrh_model* ocr = load(ocr_path, ocr_parameters);
         constexpr uint32_t width = 192u;
         constexpr uint32_t height = 64u;
         std::vector<uint8_t> pixels(static_cast<size_t>(width) * height * 4u, 255u);
@@ -180,9 +185,15 @@ int main(int argc, char** argv) {
         api.model_unload(ocr);
 
         const std::string translation_path = slash_path(argv[4]);
+        const bool translation_snapshot =
+            std::filesystem::is_directory(translation_path);
         ibrh_model* translation = load(
             translation_path,
-            "{\"task\":\"translation\",\"source_language\":\"English\","
+            std::string("{\"task\":\"translation\",") +
+            (translation_snapshot
+                ? "\"model_filename\":\"Hy-MT2-1.8B-Q6_K.gguf\","
+                : "") +
+            "\"source_language\":\"English\","
             "\"target_language\":\"French\"}");
         const std::string request_json =
             "{\"text\":\"Hello world.\",\"source_language\":\"English\","

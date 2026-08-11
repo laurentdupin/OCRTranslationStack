@@ -9,7 +9,7 @@
   "backend": "Vulkan through llama.cpp 876a4321163249c43ca4e986818fab5ab081f282",
   "library": {
     "path": "C:/b/ocr-min/bin/Release/LocalAILib.dll",
-    "sha256": "2b70f0fca2fdfadbe2eee3b1d09a8e54453674e61f175c40b07bdb4a5913875e"
+    "sha256": "59f8df839938aea88cd14cb2a66d186925999e3c5b3599772062dbc57b7010b7"
   },
   "models": [
     {
@@ -45,5 +45,6 @@
     "output": "Core-owned host UTF-8 JSON",
     "gpuResidentFramePathClaimed": false
   },
-  "command": "LocalAIInferBridgeSmoke.exe LocalAILib.dll ATH-MaaS_OvisOCR2-Q6_K.gguf mmproj-ATH-MaaS_OvisOCR2-bf16.gguf Hy-MT2-1.8B-Q6_K.gguf"
+  "modelPathContract": "Both families were loaded from canonical Hugging Face snapshot directories; direct GGUF file loading remains supported.",
+  "command": "LocalAIInferBridgeSmoke.exe LocalAILib.dll models/ocr unused models/translation"
 }
