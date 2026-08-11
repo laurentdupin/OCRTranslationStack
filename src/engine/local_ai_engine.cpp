@@ -1088,12 +1088,82 @@ LocalAIStatus Engine::ocr_file(
     }
 
     std::string source = source_language == nullptr ? "Auto" : source_language;
+    std::string output;
+    status = run_ocr_bitmap_locked(bitmap.get(), source, output);
+    if (status != LOCAL_AI_OK) {
+        return status;
+    }
+    callback(output.data(), output.size(), user_data);
+    clear_error();
+    return LOCAL_AI_OK;
+}
+
+LocalAIStatus Engine::ocr_pixels(
+    const uint8_t * pixels,
+    uint32_t width,
+    uint32_t height,
+    uint32_t row_stride_bytes,
+    bool bgra,
+    const char * source_language,
+    LocalAITextCallback callback,
+    void * user_data) {
+    if (pixels == nullptr || width == 0u || height == 0u ||
+        row_stride_bytes < width * 4u || callback == nullptr) {
+        set_error("valid BGRA/RGBA pixels and an output callback are required");
+        return LOCAL_AI_INVALID_ARGUMENT;
+    }
+    std::unique_lock<std::mutex> lock(operation_mutex_, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        set_error("another OCR or translation operation is active");
+        return LOCAL_AI_BUSY;
+    }
+    cancel_requested_.store(false, std::memory_order_relaxed);
+    LocalAIStatus status = load_ocr_locked();
+    if (status != LOCAL_AI_OK) {
+        return status;
+    }
+    if (static_cast<uint64_t>(width) * height >
+        std::numeric_limits<size_t>::max() / 3u) {
+        set_error("OCR image dimensions are too large");
+        return LOCAL_AI_INVALID_ARGUMENT;
+    }
+    std::vector<uint8_t> rgb(static_cast<size_t>(width) * height * 3u);
+    for (uint32_t y = 0u; y < height; ++y) {
+        const uint8_t * source = pixels + static_cast<size_t>(y) * row_stride_bytes;
+        uint8_t * destination = rgb.data() + static_cast<size_t>(y) * width * 3u;
+        for (uint32_t x = 0u; x < width; ++x) {
+            const uint8_t * pixel = source + static_cast<size_t>(x) * 4u;
+            destination[x * 3u + 0u] = bgra ? pixel[2] : pixel[0];
+            destination[x * 3u + 1u] = pixel[1];
+            destination[x * 3u + 2u] = bgra ? pixel[0] : pixel[2];
+        }
+    }
+    BitmapPtr bitmap(mtmd_bitmap_init(width, height, rgb.data()));
+    if (!bitmap) {
+        set_error("libmtmd could not create an OCR bitmap");
+        return LOCAL_AI_INFERENCE_FAILED;
+    }
+    std::string output;
+    status = run_ocr_bitmap_locked(
+        bitmap.get(), source_language == nullptr ? "Auto" : source_language,
+        output);
+    if (status != LOCAL_AI_OK) {
+        return status;
+    }
+    callback(output.data(), output.size(), user_data);
+    clear_error();
+    return LOCAL_AI_OK;
+}
+
+LocalAIStatus Engine::run_ocr_bitmap_locked(
+    mtmd_bitmap * bitmap,
+    const std::string & source,
+    std::string & output) {
     std::string prompt =
         "<|im_start|>user\n" + std::string(mtmd_default_marker()) + "\n" +
         make_ocr_prompt(source) +
         "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n";
-    std::string output;
-    status = run_generation_locked(*ocr_, prompt, bitmap.get(), 4096, output);
+    LocalAIStatus status = run_generation_locked(*ocr_, prompt, bitmap, 4096, output);
     if (status != LOCAL_AI_OK) {
         return status;
     }
@@ -1112,7 +1182,7 @@ LocalAIStatus Engine::ocr_file(
             "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n";
         std::string recovered;
         const LocalAIStatus recovery_status = run_generation_locked(
-            *ocr_, layout_prompt, bitmap.get(), 4096, recovered);
+            *ocr_, layout_prompt, bitmap, 4096, recovered);
         if (recovery_status == LOCAL_AI_OK) {
             recovered = remove_visual_image_tags(std::move(recovered));
             recovered = normalize_ocr_blocks(std::move(recovered));
@@ -1129,8 +1199,6 @@ LocalAIStatus Engine::ocr_file(
             return recovery_status;
         }
     }
-    callback(output.data(), output.size(), user_data);
-    clear_error();
     return LOCAL_AI_OK;
 }
 

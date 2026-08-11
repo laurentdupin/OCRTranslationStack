@@ -127,14 +127,19 @@ add_subdirectory(
 
 add_library(LocalAILib SHARED
     src/dll/local_ai_dll.cpp
-    src/engine/local_ai_engine.cpp)
+    src/engine/local_ai_engine.cpp
+    src/inferbridge/inferbridge_harness.cpp)
 if (LOCALAI_ENABLE_FURIGANA)
     target_sources(LocalAILib PRIVATE src/engine/furigana_ocr.cpp)
 else()
     target_sources(LocalAILib PRIVATE src/engine/furigana_ocr_disabled.cpp)
 endif()
 target_compile_features(LocalAILib PRIVATE cxx_std_20)
-target_compile_definitions(LocalAILib PRIVATE LOCALAI_BUILD_DLL NOMINMAX WIN32_LEAN_AND_MEAN)
+target_compile_definitions(LocalAILib PRIVATE
+    LOCALAI_BUILD_DLL
+    INFERBRIDGE_HARNESS_BUILDING_LIBRARY
+    NOMINMAX
+    WIN32_LEAN_AND_MEAN)
 if (MSVC)
     target_compile_options(LocalAILib PRIVATE /utf-8)
 endif()
@@ -150,6 +155,14 @@ if (LOCALAI_ENABLE_FURIGANA)
             "${LOCALAI_ONNXRUNTIME_ROOT}/lib/onnxruntime.dll"
             "$<TARGET_FILE_DIR:LocalAILib>/onnxruntime.dll")
     install(FILES "${LOCALAI_ONNXRUNTIME_ROOT}/lib/onnxruntime.dll" DESTINATION .)
+endif()
+
+add_executable(LocalAIInferBridgeSmoke tests/inferbridge_harness_smoke.cpp)
+target_compile_features(LocalAIInferBridgeSmoke PRIVATE cxx_std_20)
+target_include_directories(LocalAIInferBridgeSmoke PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include")
+if (MSVC)
+    target_compile_options(LocalAIInferBridgeSmoke PRIVATE /W4 /WX /permissive- /utf-8)
 endif()
 
 add_executable(LocalAIApp WIN32 src/app/main.cpp)

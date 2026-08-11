@@ -35,6 +35,15 @@ public:
         const char * source_language,
         LocalAITextCallback callback,
         void * user_data);
+    LocalAIStatus ocr_pixels(
+        const uint8_t * pixels,
+        uint32_t width,
+        uint32_t height,
+        uint32_t row_stride_bytes,
+        bool bgra,
+        const char * source_language,
+        LocalAITextCallback callback,
+        void * user_data);
     LocalAIStatus ocr_furigana_file(
         const wchar_t * image_path,
         const char * source_language,
@@ -74,6 +83,11 @@ private:
         const std::string & segment,
         const std::string & source_language,
         const std::string & target_language,
+        std::string & output);
+
+    LocalAIStatus run_ocr_bitmap_locked(
+        mtmd_bitmap * bitmap,
+        const std::string & source_language,
         std::string & output);
 
     void set_error(const std::string & message);
