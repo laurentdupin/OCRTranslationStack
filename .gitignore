@@ -1,0 +1,13 @@
+/third_party/llama.cpp/
+/third_party/onnxruntime/
+/third_party/mecab/
+/build/
+/dist/
+/ii.png
+/models/ocr/*.gguf
+/models/translation/*.gguf
+/models/ppocr/*.onnx
+/models/ppocr/*.download
+/models/japanese/*.zip
+/models/ocr/*.download
+/models/translation/*.download

@@ -1,0 +1,10 @@
+# Temporary smoke dictionary format: UTF-8 surface<TAB>hiragana reading.
+# Production setup uses the pinned Japanese MeCab/UniDic directory instead.
+今日	きょう
+図書館	としょかん
+行	い
+明日	あした
+東京駅	とうきょうえき
+新聞	しんぶん
+読み	よみ
+ます	ます

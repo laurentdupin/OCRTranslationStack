@@ -1,0 +1,11 @@
+tencent/Hy-MT2-1.8B-GGUF
+
+Tencent is pleased to support the open-source community by making
+Hy-MT2-1.8B-GGUF available.
+
+Copyright (C) 2026 Tencent. All rights reserved.
+
+Hy-MT2-1.8B-GGUF is licensed under the Apache License, Version 2.0. The
+complete license text is included in Apache-2.0.txt in this directory. The
+original LICENSE.txt is also copied next to the external model files by
+setup_models.ps1.

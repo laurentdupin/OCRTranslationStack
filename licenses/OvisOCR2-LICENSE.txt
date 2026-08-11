@@ -1,0 +1,8 @@
+ATH-MaaS/OvisOCR2
+
+Copyright 2026 Alibaba Cloud
+
+Licensed under the Apache License, Version 2.0. The complete license text is
+included in Apache-2.0.txt in this directory. The original official model
+license was retrieved from the pinned revision recorded in README.md and
+setup_models.ps1.

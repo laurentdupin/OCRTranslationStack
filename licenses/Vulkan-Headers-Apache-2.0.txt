@@ -1,0 +1,6 @@
+The Vulkan headers and loader used to build this project are supplied by the
+Khronos Vulkan SDK. Vulkan-Headers are distributed under the Apache License
+2.0; the complete Apache-2.0 text is included in this directory. This project
+does not bundle a Vulkan loader DLL: Windows loads the Vulkan runtime supplied
+by the user's graphics driver. If a distributor bundles a loader, retain the
+loader's own Khronos license and attribution files.
