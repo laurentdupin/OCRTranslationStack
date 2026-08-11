@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "status": "validated",
+  "date": "2026-08-11",
+  "inferBridgeHarnessApi": "2.0",
+  "harnessId": "inferbridge.local-ai-text",
+  "harnessVersion": "2.0.0",
+  "device": "AMD Radeon RX 9070",
+  "backend": "Vulkan through llama.cpp 876a4321163249c43ca4e986818fab5ab081f282",
+  "library": {
+    "path": "C:/b/ocr-min/bin/Release/LocalAILib.dll",
+    "sha256": "2b70f0fca2fdfadbe2eee3b1d09a8e54453674e61f175c40b07bdb4a5913875e"
+  },
+  "models": [
+    {
+      "id": "ovisocr2-q6-k",
+      "modelSha256": "7f86d22d9e3e359a4156c1a2f01bbd35f07bcc33dc33ddd92aee2812db101705",
+      "projectorSha256": "842015fc8bb09d8b953a04b1ba329510e7259081422a9dab50f41ce4fac430a1",
+      "sourceFrameId": 7001,
+      "output": {"text": "## 1", "sourceFrameId": 7001},
+      "result": "passed"
+    },
+    {
+      "id": "hy-mt2-1.8b-q6-k",
+      "modelSha256": "d98fe604dec1f28f58f80d7d560f7177e584d3b8e5835862687660e5ff97cb40",
+      "sourceFrameId": 7002,
+      "input": "Hello world.",
+      "output": {"text": "Bonjour monde.", "sourceFrameId": 7002},
+      "result": "passed"
+    }
+  ],
+  "lifecycle": {
+    "runtimeCreate": true,
+    "modelLoad": true,
+    "asyncSubmit": true,
+    "jobPoll": true,
+    "sourceFrameIdCorrelation": true,
+    "modelUnload": true,
+    "runtimeDestroy": true
+  },
+  "transfer": {
+    "tier": "host_memory",
+    "ocrInput": "host BGRA8",
+    "translationInput": "host UTF-8 JSON",
+    "output": "Core-owned host UTF-8 JSON",
+    "gpuResidentFramePathClaimed": false
+  },
+  "command": "LocalAIInferBridgeSmoke.exe LocalAILib.dll ATH-MaaS_OvisOCR2-Q6_K.gguf mmproj-ATH-MaaS_OvisOCR2-bf16.gguf Hy-MT2-1.8B-Q6_K.gguf"
+}
